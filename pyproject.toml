@@ -3,5 +3,33 @@ name = "inventory-management-system-ims"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "beanie>=2.1.0",
+    "fastapi>=0.136.3",
+    "httpx>=0.28.1",
+    "motor>=3.7.1",
+    "streamlit>=1.58.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+    "pre-commit>=4.6.0",
+    "pysonar>=1.6.0.4905",
+    "ruff>=0.15.15",
+]
+
+[tool.mypy]
+python_version = "3.12"
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.sonar]
+projectKey = "Inventory-Management-System"    
+sources = "."
