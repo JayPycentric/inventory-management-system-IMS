@@ -5,13 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "beanie>=2.1.0",
+    "beanie<1.26.0",
     "fastapi>=0.136.3",
     "httpx>=0.28.1",
     "motor>=3.7.1",
     "python-dotenv>=1.2.2",
     "streamlit>=1.58.0",
-    "unicorn>=2.1.4",
+    "uvicorn>=0.48.0",
 ]
 
 [dependency-groups]
@@ -33,5 +33,5 @@ ignore_missing_imports = true
 target-version = "py312"
 
 [tool.sonar]
-projectKey = "Inventory-Management-System"    
+projectKey = "Inventory-Management-System"
 sources = "."
