@@ -44,3 +44,18 @@ async def get_product(product_id: PydanticObjectId) -> Product:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while retrieving your product.",
         )
+
+
+@router.get("/", response_model=list[ProductResponse], status_code=status.HTTP_200_OK)
+async def get_all_products() -> list[Product]:
+    try:
+        products = await Product.find_all().to_list()
+        return products
+
+    except PyMongoError as e:
+        print(f"Database error: {e}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A database error occurred while retrieving products.",
+        )
