@@ -82,3 +82,30 @@ async def delete_product(product_id: PydanticObjectId) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while trying to delete the product.",
         )
+
+
+@router.patch(
+    "/{product_id}/restock",
+    response_model=ProductResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def restock_product(product_id: PydanticObjectId) -> Product:
+    try:
+        product = await Product.get(product_id)
+
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Product with ID '{product_id}' not found.",
+            )
+        await product.update({"$inc": {Product.stock: 10}})
+        await product.sync()
+
+        return product
+
+    except PyMongoError as e:
+        print(f"Database error during deletion: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A database error occurred while trying to restock the product.",
+        )
