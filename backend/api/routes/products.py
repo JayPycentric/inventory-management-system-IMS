@@ -1,18 +1,29 @@
 from beanie import PydanticObjectId
 from fastapi import APIRouter, HTTPException, status
-from pymongo.errors import PyMongoError
+from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from backend.models.products import Product
 from backend.schemas.products import ProductCreate, ProductResponse
+from backend.utils import generate_sku
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(post_request: ProductCreate) -> Product:
+    product_data = post_request.model_dump()
+    product_data["sku"] = generate_sku(product_data["category"], product_data["name"])
+
     try:
-        new_product = await Product(**post_request.model_dump()).create()
+        new_product = await Product(**product_data).create()
         return new_product
+
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A product with the same sku exists already, try again.",
+        )
+
     except PyMongoError as e:
         print(f"Database error: {e}")
 

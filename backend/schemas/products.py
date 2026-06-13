@@ -19,6 +19,7 @@ class ProductUpdate(BaseModel):
 class ProductResponse(BaseModel):
     id: PydanticObjectId
     name: str
+    sku: str
     price: float
     stock: int
     category: str
@@ -27,5 +28,5 @@ class ProductResponse(BaseModel):
         from_attributes = True
 
 
-class ProductRestock(BaseModel):
+class ProductRestock(BaseModel):  # For future add stock use
     stock: int = Field(default=10, gt=0)
