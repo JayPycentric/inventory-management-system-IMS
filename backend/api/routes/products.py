@@ -59,3 +59,26 @@ async def get_all_products() -> list[Product]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while retrieving products.",
         )
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(product_id: PydanticObjectId) -> None:
+    try:
+        product = await Product.get(product_id)
+
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Product with ID '{product_id}' not found.",
+            )
+
+        await product.delete()  # pyright: ignore[reportCallIssue]
+
+        return None
+
+    except PyMongoError as e:
+        print(f"Database error during deletion: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A database error occurred while trying to delete the product.",
+        )
