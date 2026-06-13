@@ -25,3 +25,7 @@ class ProductResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ProductRestock(BaseModel):
+    stock: int = Field(default=10, gt=0)
