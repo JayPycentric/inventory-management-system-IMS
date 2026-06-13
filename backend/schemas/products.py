@@ -1,8 +1,6 @@
 from beanie import PydanticObjectId
 from pydantic import BaseModel, Field
 
-# TODO: Add SKU Validation
-
 
 class ProductCreate(BaseModel):
     name: str

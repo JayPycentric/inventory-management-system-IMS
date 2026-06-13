@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from backend.api.routes import api_router
 from backend.core.config import settings
 from backend.core.database import init_db
 
@@ -17,6 +18,8 @@ app = FastAPI(
     title=settings.APP_TITLE,
     lifespan=lifespan,
 )
+
+app.include_router(api_router)
 
 
 @app.get("/health")
