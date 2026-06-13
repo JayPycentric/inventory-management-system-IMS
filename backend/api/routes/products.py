@@ -35,6 +35,27 @@ async def create_product(post_request: ProductCreate) -> Product:
         )
 
 
+@router.get("/", response_model=list[ProductResponse], status_code=status.HTTP_200_OK)
+async def get_all_products(
+    category: Annotated[str | None, Query(description="Filter by catergory")] = None,
+) -> list[Product]:
+    try:
+        if category:
+            products = await Product.find(Product.category == category).to_list()
+        else:
+            products = await Product.find_all().to_list()
+
+        return products
+
+    except PyMongoError as e:
+        print(f"Database error: {e}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A database error occurred while retrieving products.",
+        )
+
+
 @router.get(
     "/search", response_model=list[ProductResponse], status_code=status.HTTP_200_OK
 )
@@ -94,21 +115,6 @@ async def get_product(product_id: PydanticObjectId) -> Product:
         )
 
 
-@router.get("/", response_model=list[ProductResponse], status_code=status.HTTP_200_OK)
-async def get_all_products() -> list[Product]:
-    try:
-        products = await Product.find_all().to_list()
-        return products
-
-    except PyMongoError as e:
-        print(f"Database error: {e}")
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="A database error occurred while retrieving products.",
-        )
-
-
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(product_id: PydanticObjectId) -> None:
     try:
@@ -152,7 +158,7 @@ async def restock_product(product_id: PydanticObjectId) -> Product:
         return product
 
     except PyMongoError as e:
-        print(f"Database error during deletion: {e}")
+        print(f"Database error during restock: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while trying to restock the product.",
