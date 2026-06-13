@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from beanie import PydanticObjectId
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from backend.models.products import Product
@@ -30,6 +32,41 @@ async def create_product(post_request: ProductCreate) -> Product:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while processing your request.",
+        )
+
+
+@router.get(
+    "/search", response_model=list[ProductResponse], status_code=status.HTTP_200_OK
+)
+async def search_products(
+    name: Annotated[str | None, Query(description="Search by product name")] = None,
+    sku: Annotated[str | None, Query(description="Search by SKU")] = None,
+) -> list[Product]:
+    try:
+        if not name and not sku:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please provide either a name or SKU to search.",
+            )
+
+        if sku:
+            products = await Product.find(Product.sku == sku).to_list()
+        else:
+            products = await Product.find(Product.name == name).to_list()
+
+        if not products:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No products found matching the search criteria.",
+            )
+
+        return products
+
+    except PyMongoError as e:
+        print(f"Database error during search: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A database error occurred while searching for products.",
         )
 
 
