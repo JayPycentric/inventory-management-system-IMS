@@ -35,3 +35,4 @@ target-version = "py312"
 [tool.sonar]
 projectKey = "Inventory-Management-System"
 sources = "."
+"host.url" = "http://localhost:9000"
