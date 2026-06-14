@@ -26,7 +26,17 @@ def get_product(product_id: str) -> dict:
         return response.json()
 
 
+def create_product(data: dict) -> dict:
+    with get_client() as client:
+        response = client.post("/products/", json=data)
+        response.raise_for_status()
+        return response.json()
+
+
 # if __name__ == "__main__":
 # Testing client
 # print(get_all_products())
 # print(get_product())
+# print(
+#     create_product({"name": "HTTPX", "price": 20, "stock": 3, "category": "client"})
+# )
