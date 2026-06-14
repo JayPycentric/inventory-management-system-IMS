@@ -53,8 +53,16 @@ def restock_product(product_id: str) -> dict:
         return response.json()
 
 
-# if __name__ == "__main__":
-# Testing client
+def get_products_by_category(category: str) -> list[dict]:
+    with get_client() as client:
+        response = client.get("/products/", params={"category": category})
+        response.raise_for_status()
+        return response.json()
+
+
+if __name__ == "__main__":
+    # Testing client
+    print(get_products_by_category("Gaming"))
 # print(get_all_products())
 # print(restock_product("6a2f26ebfdeeaeea027a9b73"))
 # print(get_product())
