@@ -19,6 +19,14 @@ def get_all_products() -> list[dict]:
         return response.json()
 
 
-if __name__ == "__main__":
-    # Testing client
-    get_all_products()
+def get_product(product_id: str) -> dict:
+    with get_client() as client:
+        response = client.get(f"/products/{product_id}")
+        response.raise_for_status()
+        return response.json()
+
+
+# if __name__ == "__main__":
+# Testing client
+# print(get_all_products())
+# print(get_product())
