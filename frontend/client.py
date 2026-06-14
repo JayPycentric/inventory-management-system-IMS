@@ -33,6 +33,13 @@ def create_product(data: dict) -> dict:
         return response.json()
 
 
+def update_product(product_id: str, data: dict) -> dict:
+    with get_client() as client:
+        response = client.patch(f"/products/{product_id}", json=data)
+        response.raise_for_status()
+        return response.json()
+
+
 # if __name__ == "__main__":
 # Testing client
 # print(get_all_products())
