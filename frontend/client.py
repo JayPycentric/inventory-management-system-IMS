@@ -60,9 +60,23 @@ def get_products_by_category(category: str) -> list[dict]:
         return response.json()
 
 
-if __name__ == "__main__":
-    # Testing client
-    print(get_products_by_category("Gaming"))
+def search_products(name: str | None = None, sku: str | None = None) -> list[dict]:
+    param: dict[str, str] = {}
+    if name:
+        param["name"] = name
+    if sku:
+        param["sku"] = sku
+
+    with get_client() as client:
+        response = client.get("/products/search", params=param)
+        response.raise_for_status()
+        return response.json()
+
+
+# if __name__ == "__main__":
+# Testing client
+# print(search_products(sku="CLIE-HTT-8178"))
+# print(get_products_by_category("Gaming"))
 # print(get_all_products())
 # print(restock_product("6a2f26ebfdeeaeea027a9b73"))
 # print(get_product())
