@@ -40,6 +40,12 @@ def update_product(product_id: str, data: dict) -> dict:
         return response.json()
 
 
+def delete_product(product_id: str) -> None:
+    with get_client() as client:
+        response = client.delete(f"/products/{product_id}")
+        response.raise_for_status()
+
+
 # if __name__ == "__main__":
 # Testing client
 # print(get_all_products())
