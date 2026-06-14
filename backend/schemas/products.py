@@ -13,7 +13,7 @@ class ProductUpdate(BaseModel):
     name: str | None = None
     price: float | None = Field(default=None, gt=0)
     stock: int | None = Field(default=None, ge=0)
-    category: str
+    category: str | None = None
 
 
 class ProductResponse(BaseModel):
