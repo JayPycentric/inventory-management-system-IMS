@@ -73,8 +73,16 @@ def search_products(name: str | None = None, sku: str | None = None) -> list[dic
         return response.json()
 
 
-# if __name__ == "__main__":
-# Testing client
+def get_metrics() -> dict:
+    with get_client() as client:
+        response = client.get("/metric/")
+        response.raise_for_status()
+        return response.json()
+
+
+if __name__ == "__main__":
+    # Testing client
+    print(get_metrics())
 # print(search_products(sku="CLIE-HTT-8178"))
 # print(get_products_by_category("Gaming"))
 # print(get_all_products())
