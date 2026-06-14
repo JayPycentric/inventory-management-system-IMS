@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from backend.models.products import Product
-from backend.schemas.products import ProductCreate, ProductResponse
+from backend.schemas.products import ProductCreate, ProductResponse, ProductUpdate
 from backend.utils import generate_sku
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -112,6 +112,41 @@ async def get_product(product_id: PydanticObjectId) -> Product:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while retrieving your product.",
+        )
+
+
+@router.patch(
+    "/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK
+)
+async def update_product(
+    product_id: PydanticObjectId, update_request: ProductUpdate
+) -> Product:
+    try:
+        product = await Product.get(product_id)
+
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Product with ID '{product_id}' not found.",
+            )
+
+        update_data = update_request.model_dump(exclude_unset=True)
+
+        if not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No fields provided to update.",
+            )
+
+        await product.set(update_data)
+
+        return product
+
+    except PyMongoError as e:
+        print(f"Database error during update: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A database error occurred while updating the product.",
         )
 
 
