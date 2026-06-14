@@ -46,9 +46,17 @@ def delete_product(product_id: str) -> None:
         response.raise_for_status()
 
 
+def restock_product(product_id: str) -> dict:
+    with get_client() as client:
+        response = client.patch(f"/products/{product_id}/restock")
+        response.raise_for_status()
+        return response.json()
+
+
 # if __name__ == "__main__":
 # Testing client
 # print(get_all_products())
+# print(restock_product("6a2f26ebfdeeaeea027a9b73"))
 # print(get_product())
 # print(
 #     create_product({"name": "HTTPX", "price": 20, "stock": 3, "category": "client"})
