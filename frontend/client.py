@@ -22,7 +22,7 @@ def get_all_products() -> list[dict]:
 
 def get_product(product_id: str) -> dict:
     with get_client() as client:
-        response = client.get(f"/{PRODUCTS_ENDPOINT}/{product_id}")
+        response = client.get(f"{PRODUCTS_ENDPOINT}/{product_id}")
         response.raise_for_status()
         return response.json()
 
