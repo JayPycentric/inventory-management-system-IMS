@@ -6,6 +6,7 @@ from client import (
     get_metrics,
     get_products_by_category,
     restock_product,
+    search_products,
     update_product,
 )
 
@@ -179,16 +180,31 @@ def get_categories(products: list[dict]) -> list[str]:
     return sorted({product["category"] for product in products})
 
 
-def display_filter(products: list[dict]) -> str:
-    categories = ["All"] + get_categories(products)
-    selected_category = st.selectbox("Filter by Category", options=categories)
-    return selected_category
+def display_search_and_filter(products: list[dict]) -> tuple[str, str]:
+    col1, col2 = st.columns(2)
+
+    with col1:
+        search_term = st.text_input(
+            "Search by Name or SKU",
+            placeholder="e.g. Keyboard or ELEC-KBD-9042",
+        )
+
+    with col2:
+        categories = ["All"] + get_categories(products)
+        selected_category = st.selectbox("Filter by Category", options=categories)
+
+    return search_term, selected_category
 
 
-def display_products(category: str = "All") -> None:
+def display_products(search_term: str = "", category: str = "All") -> None:
     st.subheader("Products")
     try:
-        if category != "All":
+        if search_term:
+            if "-" in search_term:
+                products = search_products(sku=search_term)
+            else:
+                products = search_products(name=search_term)
+        elif category != "All":
             products = get_products_by_category(category)
         else:
             products = get_all_products()
@@ -224,9 +240,9 @@ display_metrics()
 st.divider()
 
 all_products = get_all_products()
-selected_category = display_filter(all_products)
-st.divider()
+search_term, selected_category = display_search_and_filter(all_products)
+# st.divider()
 
-display_products(category=selected_category)
+display_products(search_term=search_term, category=selected_category)
 st.divider()
 display_create_form()
