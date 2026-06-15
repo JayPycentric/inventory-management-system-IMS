@@ -1,7 +1,7 @@
 from time import sleep
 
 import streamlit as st
-from client import create_product, get_all_products, get_metrics
+from client import create_product, get_all_products, get_metrics, restock_product
 
 st.set_page_config(
     page_title="Inventory Management System",
@@ -68,7 +68,7 @@ def display_create_form() -> None:
                     }
                 )
                 st.success(f"{name} added successfully.")
-                sleep(2)
+                sleep(1)
                 st.rerun()
 
             except Exception as e:
@@ -83,7 +83,7 @@ def display_products() -> None:
             st.info("No products found.")
             return
 
-        header1, header2, header3, header4 = st.columns([3, 2, 2, 2])
+        header1, header2, header3, header4, header5 = st.columns([3, 2, 2, 2, 3])
         with header1:
             st.markdown(":orange[**Name / SKU**]")
         with header2:
@@ -92,19 +92,41 @@ def display_products() -> None:
             st.markdown(":orange[**Stock**]")
         with header4:
             st.markdown(":orange[**Category**]")
+        with header5:
+            st.markdown(":orange[**Actions**]")
 
         for product in products:
             with st.container(border=True):
-                col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+                col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 2, 3])
                 with col1:
                     st.write(f"**{product['name']}**")
                     st.caption(f":red[{product['sku']}]")
+
                 with col2:
                     st.write(f"R {product['price']:,.2f}")
+
                 with col3:
                     st.write(f"Stock: {product['stock']}")
+
                 with col4:
                     st.write(product["category"])
+
+                with col5:
+                    btn1, _ = st.columns(2)
+
+                    with btn1:
+                        if st.button(
+                            "Restock",
+                            key=f"restock_{product['id']}",
+                            use_container_width=True,
+                        ):
+                            try:
+                                restock_product(product["id"])
+                                st.toast(f"{product['name']} restocked successfully.")
+                                sleep(1)
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Failed to restock: {e}")
 
     except Exception as e:
         st.error(f"Failed to load products: {e}")
