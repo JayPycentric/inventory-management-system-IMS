@@ -1,7 +1,7 @@
 from time import sleep
 
 import streamlit as st
-from client import create_product, get_metrics
+from client import create_product, get_all_products, get_metrics
 
 st.set_page_config(
     page_title="Inventory Management System",
@@ -14,6 +14,7 @@ st.divider()
 
 
 def display_metrics() -> None:
+    st.subheader("Products Metrics")
     try:
         metrics = get_metrics()
 
@@ -74,6 +75,43 @@ def display_create_form() -> None:
                 st.error(f"Failed to create product: {e}")
 
 
+def display_products() -> None:
+    st.subheader("Products")
+    try:
+        products = get_all_products()
+        if not products:
+            st.info("No products found.")
+            return
+
+        header1, header2, header3, header4 = st.columns([3, 2, 2, 2])
+        with header1:
+            st.markdown(":orange[**Name / SKU**]")
+        with header2:
+            st.markdown(":orange[**Price**]")
+        with header3:
+            st.markdown(":orange[**Stock**]")
+        with header4:
+            st.markdown(":orange[**Category**]")
+
+        for product in products:
+            with st.container(border=True):
+                col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+                with col1:
+                    st.write(f"**{product['name']}**")
+                    st.caption(f":red[{product['sku']}]")
+                with col2:
+                    st.write(f"R {product['price']:,.2f}")
+                with col3:
+                    st.write(f"Stock: {product['stock']}")
+                with col4:
+                    st.write(product["category"])
+
+    except Exception as e:
+        st.error(f"Failed to load products: {e}")
+
+
 display_metrics()
+st.divider()
+display_products()
 st.divider()
 display_create_form()
