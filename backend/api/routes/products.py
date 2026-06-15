@@ -6,7 +6,7 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from backend.models.products import Product
 from backend.schemas.products import ProductCreate, ProductResponse, ProductUpdate
-from backend.utils import generate_sku
+from backend.utils.sku import clean_string, generate_sku
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -14,6 +14,10 @@ router = APIRouter(prefix="/products", tags=["Products"])
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(post_request: ProductCreate) -> Product:
     product_data = post_request.model_dump()
+
+    product_data["name"] = clean_string(product_data["name"])
+    product_data["category"] = clean_string(product_data["category"])
+    product_data["price"] = round(product_data["price"], 2)
     product_data["sku"] = generate_sku(product_data["category"], product_data["name"])
 
     try:
@@ -28,7 +32,6 @@ async def create_product(post_request: ProductCreate) -> Product:
 
     except PyMongoError as e:
         print(f"Database error: {e}")
-
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while processing your request.",
@@ -37,7 +40,7 @@ async def create_product(post_request: ProductCreate) -> Product:
 
 @router.get("/", response_model=list[ProductResponse], status_code=status.HTTP_200_OK)
 async def get_all_products(
-    category: Annotated[str | None, Query(description="Filter by catergory")] = None,
+    category: Annotated[str | None, Query(description="Filter by category")] = None,
 ) -> list[Product]:
     try:
         if category:
@@ -49,7 +52,6 @@ async def get_all_products(
 
     except PyMongoError as e:
         print(f"Database error: {e}")
-
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while retrieving products.",
@@ -108,7 +110,6 @@ async def get_product(product_id: PydanticObjectId) -> Product:
 
     except PyMongoError as e:
         print(f"Database error: {e}")
-
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="A database error occurred while retrieving your product.",
@@ -137,6 +138,13 @@ async def update_product(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No fields provided to update.",
             )
+
+        if "name" in update_data:
+            update_data["name"] = clean_string(update_data["name"])
+        if "category" in update_data:
+            update_data["category"] = clean_string(update_data["category"])
+        if "price" in update_data:
+            update_data["price"] = round(update_data["price"], 2)
 
         await product.set(update_data)
 
@@ -187,6 +195,7 @@ async def restock_product(product_id: PydanticObjectId) -> Product:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Product with ID '{product_id}' not found.",
             )
+
         await product.update({"$inc": {Product.stock: 10}})
         await product.sync()
 
