@@ -79,6 +79,101 @@ def display_create_form() -> None:
                 st.error(f"Failed to create product: {e}")
 
 
+def display_edit_form(product: dict) -> None:
+    st.subheader(f"Edit {product['name']}")
+
+    with st.form(key=f"edit_form_{product['id']}"):
+        name = st.text_input("Name", value=product["name"])
+        price = st.number_input(
+            "Price (R)",
+            value=product["price"],
+            min_value=0.01,
+            step=0.01,
+        )
+        stock = st.number_input(
+            "Stock",
+            value=product["stock"],
+            min_value=0,
+            step=1,
+        )
+        category = st.text_input("Category", value=product["category"])
+
+        submitted = st.form_submit_button("Update")
+
+        if submitted:
+            try:
+                update_product(
+                    product["id"],
+                    {
+                        "name": name,
+                        "price": price,
+                        "stock": stock,
+                        "category": category,
+                    },
+                )
+                st.toast(f"{product['name']} updated.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to update: {e}")
+
+
+def display_product_actions(product: dict) -> None:
+    btn1, btn2, btn3 = st.columns(3)
+
+    with btn1:
+        if st.button(
+            "Restock",
+            key=f"restock_{product['id']}",
+            use_container_width=True,
+        ):
+            try:
+                restock_product(product["id"])
+                st.toast(f"{product['name']} restocked successfully.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to restock: {e}")
+
+    with btn2:
+        with st.popover("Edit", use_container_width=True):
+            display_edit_form(product)
+
+    with btn3:
+        with st.popover("Delete", use_container_width=True):
+            st.warning(f"Delete **{product['name']}**?")
+            if st.button(
+                "Yes, Delete",
+                key=f"confirm_delete_{product['id']}",
+                type="primary",
+            ):
+                try:
+                    delete_product(product["id"])
+                    st.toast(f"{product['name']} deleted.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to delete: {e}")
+
+
+def display_product_row(product: dict) -> None:
+    with st.container(border=True):
+        col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 2, 3])
+
+        with col1:
+            st.write(f"**{product['name']}**")
+            st.caption(f":red[{product['sku']}]")
+
+        with col2:
+            st.write(f"R {product['price']:,.2f}")
+
+        with col3:
+            st.write(f"Stock: {product['stock']}")
+
+        with col4:
+            st.write(product["category"])
+
+        with col5:
+            display_product_actions(product)
+
+
 def display_products() -> None:
     st.subheader("Products")
     try:
@@ -100,101 +195,15 @@ def display_products() -> None:
             st.markdown(":orange[**Actions**]")
 
         for product in products:
-            with st.container(border=True):
-                col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 2, 3])
-                with col1:
-                    st.write(f"**{product['name']}**")
-                    st.caption(f":red[{product['sku']}]")
-
-                with col2:
-                    st.write(f"R {product['price']:,.2f}")
-
-                with col3:
-                    st.write(f"Stock: {product['stock']}")
-
-                with col4:
-                    st.write(product["category"])
-
-                with col5:
-                    btn1, btn2, btn3 = st.columns(3)
-
-                    with btn1:
-                        if st.button(
-                            "Restock",
-                            key=f"restock_{product['id']}",
-                            use_container_width=True,
-                        ):
-                            try:
-                                restock_product(product["id"])
-                                st.toast(f"{product['name']} restocked successfully.")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Failed to restock: {e}")
-
-                    with btn2:
-                        with st.popover("Edit", use_container_width=True):
-                            st.subheader(f"Edit {product['name']}")
-
-                            with st.form(key=f"edit_form_{product['id']}"):
-                                name = st.text_input("Name", value=product["name"])
-                                price = st.number_input(
-                                    "Price (R)",
-                                    value=product["price"],
-                                    min_value=0.01,
-                                    step=0.01,
-                                )
-
-                                stock = st.number_input(
-                                    "Stock",
-                                    value=product["stock"],
-                                    min_value=0,
-                                    step=1,
-                                )
-
-                                category = st.text_input(
-                                    "Category", value=product["category"]
-                                )
-
-                                submitted = st.form_submit_button("Update")
-
-                                if submitted:
-                                    try:
-                                        update_product(
-                                            product["id"],
-                                            {
-                                                "name": name,
-                                                "price": price,
-                                                "stock": stock,
-                                                "category": category,
-                                            },
-                                        )
-                                        st.session_state["success_message"] = (
-                                            f"{product['name']} updated."
-                                        )
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"Failed to update: {e}")
-
-                    with btn3:
-                        with st.popover("Delete", use_container_width=True):
-                            st.warning(f"Delete **{product['name']}**?")
-                            if st.button(
-                                "Yes, Delete",
-                                key=f"confirm_delete_{product['id']}",
-                                type="primary",
-                            ):
-                                try:
-                                    delete_product(product["id"])
-
-                                    st.toast(f"{product['name']} deleted.")
-                                    st.rerun()
-
-                                except Exception as e:
-                                    st.error(f"Failed to delete: {e}")
+            display_product_row(product)
 
     except Exception as e:
         st.error(f"Failed to load products: {e}")
 
+
+if "success_message" in st.session_state:
+    st.success(st.session_state["success_message"])
+    del st.session_state["success_message"]
 
 display_metrics()
 st.divider()
