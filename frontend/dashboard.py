@@ -1,7 +1,11 @@
-from time import sleep
-
 import streamlit as st
-from client import create_product, get_all_products, get_metrics, restock_product
+from client import (
+    create_product,
+    delete_product,
+    get_all_products,
+    get_metrics,
+    restock_product,
+)
 
 st.set_page_config(
     page_title="Inventory Management System",
@@ -67,8 +71,7 @@ def display_create_form() -> None:
                         "category": category,
                     }
                 )
-                st.success(f"{name} added successfully.")
-                sleep(1)
+                st.toast(f"{name} added successfully.")
                 st.rerun()
 
             except Exception as e:
@@ -112,7 +115,7 @@ def display_products() -> None:
                     st.write(product["category"])
 
                 with col5:
-                    btn1, _ = st.columns(2)
+                    btn1, btn2 = st.columns(2)
 
                     with btn1:
                         if st.button(
@@ -123,11 +126,26 @@ def display_products() -> None:
                             try:
                                 restock_product(product["id"])
                                 st.toast(f"{product['name']} restocked successfully.")
-                                sleep(1)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Failed to restock: {e}")
 
+                    with btn2:
+                        with st.popover("Delete", use_container_width=True):
+                            st.warning(f"Delete **{product['name']}**?")
+                            if st.button(
+                                "Yes, Delete",
+                                key=f"confirm_delete_{product['id']}",
+                                type="primary",
+                            ):
+                                try:
+                                    delete_product(product["id"])
+
+                                    st.toast(f"{product['name']} deleted.")
+                                    st.rerun()
+
+                                except Exception as e:
+                                    st.error(f"Failed to delete: {e}")
     except Exception as e:
         st.error(f"Failed to load products: {e}")
 
