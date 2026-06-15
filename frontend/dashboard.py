@@ -16,8 +16,15 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Inventory Management System")
-st.divider()
+title_col, spacer_col, logo_col = st.columns([17, 2, 1], vertical_alignment="center")
+with title_col:
+    st.title("Inventory Management System")
+
+with logo_col:
+    st.image(
+        "frontend/resources/inventory.png",
+        width="stretch",
+    )
 
 
 def display_metrics() -> None:
