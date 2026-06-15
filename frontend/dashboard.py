@@ -5,6 +5,7 @@ from client import (
     get_all_products,
     get_metrics,
     restock_product,
+    update_product,
 )
 
 st.set_page_config(
@@ -115,7 +116,7 @@ def display_products() -> None:
                     st.write(product["category"])
 
                 with col5:
-                    btn1, btn2 = st.columns(2)
+                    btn1, btn2, btn3 = st.columns(3)
 
                     with btn1:
                         if st.button(
@@ -131,6 +132,50 @@ def display_products() -> None:
                                 st.error(f"Failed to restock: {e}")
 
                     with btn2:
+                        with st.popover("Edit", use_container_width=True):
+                            st.subheader(f"Edit {product['name']}")
+
+                            with st.form(key=f"edit_form_{product['id']}"):
+                                name = st.text_input("Name", value=product["name"])
+                                price = st.number_input(
+                                    "Price (R)",
+                                    value=product["price"],
+                                    min_value=0.01,
+                                    step=0.01,
+                                )
+
+                                stock = st.number_input(
+                                    "Stock",
+                                    value=product["stock"],
+                                    min_value=0,
+                                    step=1,
+                                )
+
+                                category = st.text_input(
+                                    "Category", value=product["category"]
+                                )
+
+                                submitted = st.form_submit_button("Update")
+
+                                if submitted:
+                                    try:
+                                        update_product(
+                                            product["id"],
+                                            {
+                                                "name": name,
+                                                "price": price,
+                                                "stock": stock,
+                                                "category": category,
+                                            },
+                                        )
+                                        st.session_state["success_message"] = (
+                                            f"{product['name']} updated."
+                                        )
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Failed to update: {e}")
+
+                    with btn3:
                         with st.popover("Delete", use_container_width=True):
                             st.warning(f"Delete **{product['name']}**?")
                             if st.button(
@@ -146,6 +191,7 @@ def display_products() -> None:
 
                                 except Exception as e:
                                     st.error(f"Failed to delete: {e}")
+
     except Exception as e:
         st.error(f"Failed to load products: {e}")
 
