@@ -10,3 +10,7 @@ def generate_sku(catergory: str, name: str) -> str:
     random_suffix = random.randint(1000, 9999)
 
     return f"{cat_prefix}-{prod_prefix}-{random_suffix}"
+
+
+def clean_string(value: str) -> str:
+    return " ".join(value.strip().split()).lower().title()
