@@ -4,6 +4,7 @@ from client import (
     delete_product,
     get_all_products,
     get_metrics,
+    get_products_by_category,
     restock_product,
     update_product,
 )
@@ -174,10 +175,24 @@ def display_product_row(product: dict) -> None:
             display_product_actions(product)
 
 
-def display_products() -> None:
+def get_categories(products: list[dict]) -> list[str]:
+    return sorted({product["category"] for product in products})
+
+
+def display_filter(products: list[dict]) -> str:
+    categories = ["All"] + get_categories(products)
+    selected_category = st.selectbox("Filter by Category", options=categories)
+    return selected_category
+
+
+def display_products(category: str = "All") -> None:
     st.subheader("Products")
     try:
-        products = get_all_products()
+        if category != "All":
+            products = get_products_by_category(category)
+        else:
+            products = get_all_products()
+
         if not products:
             st.info("No products found.")
             return
@@ -207,6 +222,11 @@ if "success_message" in st.session_state:
 
 display_metrics()
 st.divider()
-display_products()
+
+all_products = get_all_products()
+selected_category = display_filter(all_products)
+st.divider()
+
+display_products(category=selected_category)
 st.divider()
 display_create_form()
