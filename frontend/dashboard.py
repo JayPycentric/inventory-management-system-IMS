@@ -16,8 +16,15 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Inventory Management System")
-st.divider()
+title_col, spacer_col, logo_col = st.columns([17, 2, 1], vertical_alignment="center")
+with title_col:
+    st.title("Inventory Management System")
+
+with logo_col:
+    st.image(
+        "frontend/resources/inventory.png",
+        width="stretch",
+    )
 
 
 def display_metrics() -> None:
@@ -29,19 +36,19 @@ def display_metrics() -> None:
 
         with col1:
             st.metric(
-                label="Total Products",
+                label=":orange[Total Products]",
                 value=metrics["total_products"],
             )
 
         with col2:
             st.metric(
-                label="Asset Valuation",
+                label=":orange[Asset Valuation]",
                 value=f"R {metrics['total_value']:,.2f}",
             )
 
         with col3:
             st.metric(
-                label="Out of Stock",
+                label=":orange[Out of Stock]",
                 value=metrics["out_of_stock_products"],
             )
 
@@ -53,12 +60,12 @@ def display_create_form() -> None:
     st.subheader("Add New Product")
 
     with st.form(key="create_product_form"):
-        name = st.text_input("Product Name")
-        price = st.number_input("Price (R)", min_value=0.01, step=0.01)
-        stock = st.number_input("Stock", min_value=0, step=1)
-        category = st.text_input("Category")
+        name = st.text_input(":orange[Product Name]")
+        price = st.number_input(":orange[Price (R)]", min_value=0.01, step=0.01)
+        stock = st.number_input(":orange[Stock]", min_value=0, step=1)
+        category = st.text_input(":orange[Category]")
 
-        submitted = st.form_submit_button("Add Product")
+        submitted = st.form_submit_button("Add Product", type="primary")
 
         if submitted:
             if not name or not category:
@@ -126,7 +133,8 @@ def display_product_actions(product: dict) -> None:
         if st.button(
             "Restock",
             key=f"restock_{product['id']}",
-            use_container_width=True,
+            width="stretch",
+            type="primary",
         ):
             try:
                 restock_product(product["id"])
@@ -136,11 +144,11 @@ def display_product_actions(product: dict) -> None:
                 st.error(f"Failed to restock: {e}")
 
     with btn2:
-        with st.popover("Edit", use_container_width=True):
+        with st.popover("Edit", width="stretch"):
             display_edit_form(product)
 
     with btn3:
-        with st.popover("Delete", use_container_width=True):
+        with st.popover("Delete", width="stretch"):
             st.warning(f"Delete **{product['name']}**?")
             if st.button(
                 "Yes, Delete",
@@ -160,19 +168,24 @@ def display_product_row(product: dict) -> None:
         col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 2, 3])
 
         with col1:
+            st.caption(":orange[**Name / SKU**]")
             st.write(f"**{product['name']}**")
             st.caption(f":red[{product['sku']}]")
 
         with col2:
+            st.caption(":orange[**Price**]")
             st.write(f"R {product['price']:,.2f}")
 
         with col3:
+            st.caption(":orange[**Stock**]")
             st.write(f"Stock: {product['stock']}")
 
         with col4:
+            st.caption(":orange[**Category**]")
             st.write(product["category"])
 
         with col5:
+            st.caption(":orange[**Actions**]")
             display_product_actions(product)
 
 
@@ -213,18 +226,6 @@ def display_products(search_term: str = "", category: str = "All") -> None:
             st.info("No products found.")
             return
 
-        header1, header2, header3, header4, header5 = st.columns([3, 2, 2, 2, 3])
-        with header1:
-            st.markdown(":orange[**Name / SKU**]")
-        with header2:
-            st.markdown(":orange[**Price**]")
-        with header3:
-            st.markdown(":orange[**Stock**]")
-        with header4:
-            st.markdown(":orange[**Category**]")
-        with header5:
-            st.markdown(":orange[**Actions**]")
-
         for product in products:
             display_product_row(product)
 
@@ -241,7 +242,6 @@ st.divider()
 
 all_products = get_all_products()
 search_term, selected_category = display_search_and_filter(all_products)
-# st.divider()
 
 display_products(search_term=search_term, category=selected_category)
 st.divider()
